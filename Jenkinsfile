@@ -1,28 +1,33 @@
 pipeline {
     agent any
-    tools {
-        maven 'maven' // Name of the Maven installation configured in Jenkins
-    }
+
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/seelimsii/Netflix-clone.git', branch: 'main'
+                git branch: 'main', url: 'https://github.com/seelimsii/Netflix-clone.git'
             }
         }
-        stage('Build with Maven') {
+
+        stage('Build Docker Image') {
             steps {
-                sh 'mvn clean install'
+                script {
+                    docker.build('netflix-clone')
+                }
             }
         }
-        stage('Package') {
+
+        stage('Run Docker Container') {
             steps {
-                sh 'mvn package'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                sh 'mvn deploy'
+                script {
+                    docker.image('netflix-clone').run('-d -p 80:80')
+                }
             }
         }
     }
+
+    post {
+        always {
+            echo 'Pipeline finished.'
+        }
+    }
 }
