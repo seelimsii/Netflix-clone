@@ -1,11 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_IMAGE_CONTROL_PANEL = 'control-panel:latest'
-        DOCKER_IMAGE_NETFLIX_CLONE = 'netflix-clone:latest'
-    }
-
     stages {
         stage('Checkout') {
             steps {
@@ -13,20 +8,18 @@ pipeline {
             }
         }
 
-        stage('Build Docker Images') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("${DOCKER_IMAGE_CONTROL_PANEL}", "-f control-pannel/Dockerfile ./control-pannel")
-                    docker.build("${DOCKER_IMAGE_NETFLIX_CLONE}", "-f Netflix-clone/Dockerfile ./Netflix-clone")
+                    docker.build('netflix-clone')
                 }
             }
         }
 
-        stage('Deploy with Docker Compose') {
+        stage('Run Docker Container') {
             steps {
                 script {
-                    sh 'docker-compose down'
-                    sh 'docker-compose up -d'
+                    docker.image('netflix-clone').run('-d -p 80:80')
                 }
             }
         }
